@@ -1,0 +1,239 @@
+<html>
+<head>
+	<title>Memory Game</title>
+</head>
+
+<style type="text/css">
+
+body{
+  text-align: center;
+  margin: 0 auto;
+  background: white;
+  font-family: arial, sans-serif;
+  font-size: 20px;
+  color: black;
+}
+
+#gameArea img{
+  width: 70px;
+  height: 100px;
+}
+
+
+</style>
+
+<body>
+	<div id='titleArea'></div>
+	<hr>
+	<div id='gameArea'></div>
+	<div id='buttonArea'></div>
+	
+	<script>
+
+var cardSet = new Array(52);
+
+
+var preloadImages = new Array(52);
+
+var pairedCards = [];  
+
+var guessCards = new Array(2);               
+
+var t;
+
+
+//This function sets up the environment for the game
+function setGame() {
+//create table
+
+var table = document.createElement('TABLE');
+    table.border='1';
+var tableBody = document.createElement('TBODY');
+    table.appendChild(tableBody);
+ for (var i=0; i<4; i++){
+       var tr = document.createElement('TR');
+       tableBody.appendChild(tr);
+for (var j=0; j<13; j++){
+           var td = document.createElement('TD');
+           var img = document.createElement("img");
+		img.id = j+i*13;
+    		img.src = "back.gif";
+	  	img.onclick= function(j){return function(){selectCard(j);};}(img.id);
+
+	td.appendChild(img);
+    	tr.appendChild(td);
+  } 
+  document.getElementById("gameArea").appendChild(tr);}
+       
+
+//create buttons
+var btn1 = document.createElement("input");
+btn1.type = "button";
+btn1.value = "Stop Game";
+btn1.id = "stop game";
+btn1.style.margin="50px 10px 0px 0px";
+btn1.onclick = stopGame;
+
+
+
+var btn2 = document.createElement("input");
+btn2.type = "button";
+btn2.value = "Show Cards";
+btn2.id = "show cards";
+btn2.style.margin="50px 10px 0px 0px";
+btn2.onclick = function(){showCard(0)};
+
+
+var btn3 = document.createElement("input");
+btn3.type = "button";
+btn3.value = "Flip Cards";
+btn3.id = "flip cards";
+btn3.style.margin="50px 10px 0px 0px";
+btn3.onclick = function(){flipCard(0)};
+
+
+
+
+
+document.getElementById('buttonArea').appendChild(btn1);
+document.getElementById('buttonArea').appendChild(btn2);
+document.getElementById('buttonArea').appendChild(btn3);
+
+}
+
+//The function accesses to all cards and turns them face-up one by one
+function showCard(i) {
+	var x = document.getElementById(i);
+	x.setAttribute("src", preloadImages[cardSet[i]]);
+	i++;
+	if(i<52){
+	setTimeout(function(){showCard(i)},100);
+	}
+}
+
+
+//The function accesses to all cards and turns them face-down one by one if the cards are not identified as the found, paired cards
+function flipCard(i) {
+	var x = document.getElementById(cardSet.indexOf(i));
+	if(!isPairedCard(i)){ 
+	x.setAttribute("src", "back.gif");}
+	i++;
+	if(i<52){
+	setTimeout(function(){flipCard(i)},100);
+	
+	}
+	}
+
+
+
+//The function checks if a card is in the collection of found paired cards.
+function isPairedCard(id) {
+	for(var i=0; i<pairedCards.length; i++) {
+        if (pairedCards[i] == id) return true;
+    }
+}
+
+//The function takes an array as the argument and uses the BubbleSort algorithm to sort the elements in the array
+function sortCards(array) {
+ do {
+    var swapped = false;
+    for(var i = 0; i < array.length; ++i) {
+      if (array[i] > array[i+1]) {
+        var temp = array[i];
+        array[i] = array[i+1];
+        array[i+1] = temp;
+        swapped = true;
+      }
+    }
+  }
+  while(swapped == true)
+}
+
+//This function starts a new gaming session
+function playGame() {
+	for (var i=0; i<52; i++){
+	  preloadImages[i]= i + ".png";
+	}
+	for (var i=0; i<52; i++){
+	  cardSet[i]=i;
+	}
+	pairedCards = [];  
+	guessCards = [];  
+	shuffleCards(cardSet); 
+     	flipCard(0);
+	resetTimer(60);
+}
+
+//This function creates a countdown timer
+function resetTimer(sec) {
+	document.getElementById("titleArea").innerHTML = ("Memory Game ( Time Left: " + sec + " seconds)");
+	sec--;
+	if(sec>=0){
+	t=setTimeout(function(){resetTimer(sec)},1000);
+	}else{	
+		stopGame();}}
+
+//This function terminates the current game session
+function stopGame() {
+  clearTimeout(t);
+  sortCards(pairedCards);
+  alert("You have found "+ pairedCards.length/2 + " pairs:\n");
+  playGame();
+}
+
+//This function takes an array as the argument and randomises order of the elements in the array
+function shuffleCards(array) {
+ var i = 0, j = 0, temp = null
+
+  for (i = array.length - 1; i > 0; i -= 1) {
+    j = Math.floor(Math.random() * (i + 1))
+    temp = array[i]
+    array[i] = array[j]
+    array[j] = temp
+  }
+}
+
+
+//This function creates a countdown timer
+function selectCard(i) {
+	if(!isPairedCard(i)){ 
+		var x = document.getElementById(i);
+		x.setAttribute("src", preloadImages[cardSet[i]]);
+		guessCards.push(cardSet[i]);
+
+		if(guessCards.length==2){
+			if(((guessCards[0]-guessCards[1])%13)==0){
+				pairedCards.push(guessCards[0]);	
+				pairedCards.push(guessCards[1]);
+			guessCards = []; 
+				}
+				else{
+			        setTimeout(notPaired,300); 
+				}
+			}
+		}
+
+	function notPaired(){
+		var y= document.getElementById(cardSet.indexOf(guessCards[0]));
+		y.setAttribute("src", "back.gif");
+		var y= document.getElementById(cardSet.indexOf(guessCards[1]));
+		y.setAttribute("src", "back.gif");
+		guessCards = []; 
+	}
+}
+
+	 
+ 
+
+
+
+(function() {
+setGame();
+playGame();
+})();
+
+</script>
+</body>
+</html>
+
+
